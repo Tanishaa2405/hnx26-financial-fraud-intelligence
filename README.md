@@ -157,7 +157,7 @@ Financial institutions face increasingly sophisticated fraud schemes, including 
 | `GEMINI_API_KEY` | Google Gemini API key for natural language explanations | Optional (Deterministic fallback active) |
 | `VITE_SUPABASE_URL` | Supabase project URL | Optional (Local Demo Auth active if unset) |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase public API key | Optional (Local Demo Auth active if unset) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server-only admin key | Optional |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only admin key | Not used by the current application |
 | `PLAID_CLIENT_ID` | Plaid API Client ID | Optional (Sandbox simulation active) |
 | `PLAID_SECRET` | Plaid API Secret | Optional |
 | `PLAID_ENV` | Plaid environment (`sandbox`) | Optional |
@@ -259,10 +259,44 @@ When multiple accounts converge on the same device and merchant within a narrow 
 
 ---
 
-## 15. Deployment (Vercel-Ready)
-- Single repository layout compatible with Vercel or Cloud Run.
-- Static assets built with `npm run build`.
-- Full-stack runtime runs `server.ts` with Express.
+## 15. Deployment on Render (Single Web Service)
+
+The included `render.yaml` creates one Node.js Web Service. It installs the
+Python fraud-engine dependencies into a virtual environment, builds the React
+frontend, and serves both the frontend and API from the Express server. No
+separate static-site, API, or Python service is needed.
+
+Render build command:
+
+```bash
+npm ci --include=dev && python3 -m venv .venv && .venv/bin/python -m pip install -r requirements.txt && npm run build
+```
+
+Render start command:
+
+```bash
+npm start
+```
+
+The Blueprint sets `PYTHON_PATH=.venv/bin/python`. Render supplies `PORT`, and
+the Express server listens on `0.0.0.0` at that port. When configuring the
+service manually, use the same build and start commands and set
+`PYTHON_PATH=.venv/bin/python`.
+
+No user-provided environment variable is required for demo data, CSV analysis,
+fraud scoring, or network features. Optional integrations use:
+
+| Variable | Description |
+|---|---|
+| `GEMINI_API_KEY` | Server-side key for Gemini explanations; deterministic evidence is returned when unset or unavailable. |
+| `VITE_SUPABASE_URL` | Supabase project URL, consumed at frontend build time. |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase public/publishable key, consumed at frontend build time. Leave both Supabase values unset to use local demo authentication. |
+| `PLAID_CLIENT_ID` | Plaid Sandbox client ID. |
+| `PLAID_SECRET` | Plaid Sandbox secret; keep server-side and never use a `VITE_` prefix. |
+| `PLAID_ENV` | Plaid environment; defaults to `sandbox`. |
+
+Do not add secrets to the repository or to frontend `VITE_` variables. The
+Supabase service-role key is not needed by the current application.
 
 ---
 

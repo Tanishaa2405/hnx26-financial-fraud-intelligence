@@ -20,6 +20,25 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // In-memory cache of current analysis results
 let currentDataset: FraudAnalysisResult | null = null;
 
+function getOrInitDataset(): FraudAnalysisResult {
+  if (!currentDataset) {
+    const initialDemo = generateRealisticDemoTransactions();
+    currentDataset = runNativeFraudEngine(initialDemo);
+    currentDataset.engine_meta = {
+      engine: 'HNX26 Native Anomaly & Syndicate Engine',
+      timestamp: new Date().toISOString(),
+    };
+  }
+  return currentDataset;
+}
+
+// Initial warm-up with realistic demo dataset
+try {
+  getOrInitDataset();
+} catch (e) {
+  console.error('Initial dataset generation failed:', e);
+}
+
 // Initialize Gemini Client server-side
 let geminiClient: GoogleGenAI | null = null;
 if (process.env.GEMINI_API_KEY) {
@@ -97,7 +116,7 @@ async function executeFraudPipeline(transactions: RawTransaction[]): Promise<Fra
 
         return pythonResult;
       } catch (pyError: any) {
-        // try next python command candidate
+        console.warn(`[Pipeline] Python command "${cmd}" failed: ${pyError.message || pyError}`);
       }
     }
 
@@ -183,6 +202,17 @@ function parseCsvToTransactions(csvContent: string): RawTransaction[] {
   return records;
 }
 
+// Health & Status endpoint for Render / monitoring
+app.get(['/api/health', '/api/status', '/healthz'], (_req: Request, res: Response): void => {
+  res.json({
+    status: 'ok',
+    success: true,
+    platform: 'HNX26 Fraud Intelligence Platform',
+    timestamp: new Date().toISOString(),
+    engine: currentDataset?.engine_meta?.engine || 'HNX26 Native Anomaly & Syndicate Engine',
+  });
+});
+
 // 1. POST /api/analyze - Accepts CSV text or JSON transactions
 app.post('/api/analyze', async (req: Request, res: Response): Promise<void> => {
   try {
@@ -193,12 +223,12 @@ app.post('/api/analyze', async (req: Request, res: Response): Promise<void> => {
     } else if (Array.isArray(req.body.transactions)) {
       transactions = req.body.transactions;
     } else {
-      res.status(400).json({ error: 'Request body must contain either "csv" string or "transactions" array.' });
+      res.status(400).json({ success: false, error: 'Request body must contain either "csv" string or "transactions" array.' });
       return;
     }
 
     if (transactions.length === 0) {
-      res.status(400).json({ error: 'No transactions found in request payload.' });
+      res.status(400).json({ success: false, error: 'No transactions found in request payload.' });
       return;
     }
 
@@ -224,36 +254,27 @@ app.post('/api/generate-demo-data', async (_req: Request, res: Response): Promis
 
 // 3. GET /api/transactions - Returns scored transactions
 app.get('/api/transactions', (_req: Request, res: Response): void => {
-  if (!currentDataset) {
-    res.status(404).json({ error: 'No dataset has been analyzed yet.' });
-    return;
-  }
-  res.json({ success: true, data: currentDataset.transactions, summary: currentDataset.summary });
+  const dataset = getOrInitDataset();
+  res.json({ success: true, data: dataset.transactions, summary: dataset.summary });
 });
 
 // 4. GET /api/alerts - Returns fraud alerts
 app.get('/api/alerts', (_req: Request, res: Response): void => {
-  if (!currentDataset) {
-    res.status(404).json({ error: 'No dataset has been analyzed yet.' });
-    return;
-  }
-  res.json({ success: true, data: currentDataset.alerts });
+  const dataset = getOrInitDataset();
+  res.json({ success: true, data: dataset.alerts });
 });
 
 // 5. GET /api/accounts/:id - Returns account profile and investigation data
 app.get('/api/accounts/:id', (req: Request, res: Response): void => {
-  if (!currentDataset) {
-    res.status(404).json({ error: 'No dataset has been analyzed yet.' });
-    return;
-  }
+  const dataset = getOrInitDataset();
   const accountId = req.params.id;
-  const account = currentDataset.accounts.find((a) => a.account_id === accountId);
+  const account = dataset.accounts.find((a) => a.account_id === accountId);
   if (!account) {
-    res.status(404).json({ error: `Account '${accountId}' not found in active dataset.` });
+    res.status(404).json({ success: false, error: `Account '${accountId}' not found in active dataset.` });
     return;
   }
 
-  const txns = currentDataset.transactions.filter((t) => t.account_id === accountId);
+  const txns = dataset.transactions.filter((t) => t.account_id === accountId);
   res.json({
     success: true,
     data: {
@@ -265,11 +286,8 @@ app.get('/api/accounts/:id', (req: Request, res: Response): void => {
 
 // 6. GET /api/network - Returns relationship graph nodes, edges, rings
 app.get('/api/network', (_req: Request, res: Response): void => {
-  if (!currentDataset) {
-    res.status(404).json({ error: 'No dataset has been analyzed yet.' });
-    return;
-  }
-  res.json({ success: true, data: currentDataset.network });
+  const dataset = getOrInitDataset();
+  res.json({ success: true, data: dataset.network });
 });
 
 // 7. POST /api/ai/explain - Gemini AI explanation of already-generated fraud findings
@@ -277,7 +295,7 @@ app.post('/api/ai/explain', async (req: Request, res: Response): Promise<void> =
   try {
     const { transaction, question } = req.body;
     if (!transaction || !transaction.transaction_id) {
-      res.status(400).json({ error: 'Missing transaction data in explanation request.' });
+      res.status(400).json({ success: false, error: 'Missing transaction data in explanation request.' });
       return;
     }
 
@@ -386,21 +404,40 @@ app.post('/api/plaid/exchange-public-token', async (req: Request, res: Response)
   }
 });
 
+const SAMPLE_CSV_FALLBACK = `transaction_id,account_id,amount,timestamp,merchant,merchant_category,device_id,location,payment_channel
+TXN_1001,ACC_101,42.50,2026-10-01T08:14:00Z,Whole Foods Market,Groceries,DEV_USR_101,Seattle WA,in_store
+TXN_1002,ACC_101,15.20,2026-10-01T12:30:00Z,Starbucks Coffee,Dining,DEV_USR_101,Seattle WA,mobile_app
+TXN_1003,ACC_101,89.99,2026-10-02T19:05:00Z,Target Superstore,Retail,DEV_USR_101,Seattle WA,in_store
+TXN_1004,ACC_101,2450.00,2026-10-03T09:00:00Z,Avalon Property Management,Rent/Housing,DEV_USR_101,Seattle WA,web_portal
+TXN_1005,ACC_101,54.10,2026-10-04T17:22:00Z,Shell Gasoline,Automotive,DEV_USR_101,Seattle WA,in_store
+TXN_1013,ACC_201,9800.00,2026-10-04T03:15:00Z,Global Coin Vault,Cryptocurrency,DEV_UNKNOWN_99,Lagos Nigeria,web_portal
+TXN_1016,ACC_301,450.00,2026-10-04T04:00:00Z,Luxury Gems Direct,Jewelry,DEV_RING_888,Miami FL,web_portal
+TXN_1017,ACC_302,480.00,2026-10-04T04:02:10Z,Luxury Gems Direct,Jewelry,DEV_RING_888,Miami FL,web_portal
+TXN_1025,ACC_501,12.00,2026-10-04T12:00:00Z,Speedy Cash Card Testing,Gift Cards,DEV_BOTNET_44,New York NY,web_portal
+TXN_1026,ACC_501,12.00,2026-10-04T12:00:30Z,Speedy Cash Card Testing,Gift Cards,DEV_BOTNET_44,New York NY,web_portal`;
+
 // Download sample CSV endpoint
 app.get('/api/sample-csv', (_req: Request, res: Response): void => {
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="transactions_sample.csv"');
+
   const samplePath = path.join(process.cwd(), 'sample-data', 'transactions_sample.csv');
   if (fs.existsSync(samplePath)) {
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename="transactions_sample.csv"');
     fs.createReadStream(samplePath).pipe(res);
   } else {
-    res.status(404).send('Sample CSV not found');
+    res.send(SAMPLE_CSV_FALLBACK);
   }
 });
 
-// Vite Middleware for Full-stack dev mode
+// Explicit 404 handler for API routes (always return JSON)
+app.all('/api/*', (_req: Request, res: Response): void => {
+  res.status(404).json({ success: false, error: 'API endpoint not found' });
+});
+
+// Vite Middleware for Full-stack dev mode & Static Serving in Production
 async function startServer() {
-  const isProd = process.env.NODE_ENV === 'production';
+  const distPath = path.join(process.cwd(), 'dist');
+  const isProd = process.env.NODE_ENV === 'production' || (fs.existsSync(distPath) && process.env.NODE_ENV !== 'development');
 
   if (!isProd) {
     const vite = await createViteServer({
@@ -409,7 +446,6 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
     if (fs.existsSync(distPath)) {
       app.use(express.static(distPath));
       app.get('*', (_req: Request, res: Response) => {
@@ -423,11 +459,9 @@ async function startServer() {
   });
 }
 
-if (!process.env.VERCEL) {
-  startServer().catch((err) => {
-    console.error('Failed to start server:', err);
-  });
-}
+startServer().catch((err) => {
+  console.error('Failed to start server:', err);
+});
 
 export default app;
 export { app };
