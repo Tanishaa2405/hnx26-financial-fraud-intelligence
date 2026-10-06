@@ -1,0 +1,45 @@
+transaction_id,account_id,amount,timestamp,merchant,merchant_category,device_id,location,payment_channel
+TXN_1001,ACC_101,42.50,2026-10-01T08:14:00Z,Whole Foods Market,Groceries,DEV_USR_101,Seattle WA,in_store
+TXN_1002,ACC_101,15.20,2026-10-01T12:30:00Z,Starbucks Coffee,Dining,DEV_USR_101,Seattle WA,mobile_app
+TXN_1003,ACC_101,89.99,2026-10-02T19:05:00Z,Target Superstore,Retail,DEV_USR_101,Seattle WA,in_store
+TXN_1004,ACC_101,2450.00,2026-10-03T09:00:00Z,Avalon Property Management,Rent/Housing,DEV_USR_101,Seattle WA,web_portal
+TXN_1005,ACC_101,54.10,2026-10-04T17:22:00Z,Shell Gasoline,Automotive,DEV_USR_101,Seattle WA,in_store
+TXN_1006,ACC_102,120.00,2026-10-01T10:00:00Z,Trader Joe's,Groceries,DEV_USR_102,San Francisco CA,in_store
+TXN_1007,ACC_102,34.50,2026-10-02T14:15:00Z,Chipotle Mexican Grill,Dining,DEV_USR_102,San Francisco CA,mobile_app
+TXN_1008,ACC_102,210.00,2026-10-03T11:45:00Z,Best Buy Electronics,Electronics,DEV_USR_102,San Francisco CA,in_store
+TXN_1009,ACC_103,18.00,2026-10-01T09:30:00Z,Peet's Coffee,Dining,DEV_USR_103,Boston MA,in_store
+TXN_1010,ACC_103,65.40,2026-10-02T18:00:00Z,CVS Pharmacy,Health,DEV_USR_103,Boston MA,in_store
+TXN_1011,ACC_103,3200.00,2026-10-03T10:15:00Z,Boston City Apartments,Rent/Housing,DEV_USR_103,Boston MA,web_portal
+TXN_1012,ACC_201,85.00,2026-10-01T11:20:00Z,Safeway,Groceries,DEV_USR_201,Austin TX,in_store
+TXN_1013,ACC_201,9800.00,2026-10-04T03:15:00Z,Global Coin Vault,Cryptocurrency,DEV_UNKNOWN_99,Lagos Nigeria,web_portal
+TXN_1014,ACC_201,9500.00,2026-10-04T03:17:30Z,Global Coin Vault,Cryptocurrency,DEV_UNKNOWN_99,Lagos Nigeria,web_portal
+TXN_1015,ACC_201,9200.00,2026-10-04T03:19:15Z,Fast Wire Express,Wire Transfer,DEV_UNKNOWN_99,Lagos Nigeria,web_portal
+TXN_1016,ACC_301,450.00,2026-10-04T04:00:00Z,Luxury Gems Direct,Jewelry,DEV_RING_888,Miami FL,web_portal
+TXN_1017,ACC_302,480.00,2026-10-04T04:02:10Z,Luxury Gems Direct,Jewelry,DEV_RING_888,Miami FL,web_portal
+TXN_1018,ACC_303,495.00,2026-10-04T04:04:45Z,Luxury Gems Direct,Jewelry,DEV_RING_888,Miami FL,web_portal
+TXN_1019,ACC_304,490.00,2026-10-04T04:06:20Z,Luxury Gems Direct,Jewelry,DEV_RING_888,Miami FL,web_portal
+TXN_1020,ACC_305,475.00,2026-10-04T04:08:00Z,Luxury Gems Direct,Jewelry,DEV_RING_888,Miami FL,web_portal
+TXN_1021,ACC_401,25.00,2026-10-02T13:00:00Z,Dunkin Donuts,Dining,DEV_USR_401,Chicago IL,in_store
+TXN_1022,ACC_401,310.00,2026-10-02T14:30:00Z,Nordstrom,Retail,DEV_USR_401,Chicago IL,in_store
+TXN_1023,ACC_401,12.50,2026-10-03T16:00:00Z,Uber Technologies,Transportation,DEV_USR_401,Chicago IL,mobile_app
+TXN_1024,ACC_401,4890.00,2026-10-04T02:45:00Z,Diamond Exchange International,Jewelry,DEV_EMULATOR_07,St. Petersburg RU,web_portal
+TXN_1025,ACC_501,12.00,2026-10-04T12:00:00Z,Speedy Cash Card Testing,Gift Cards,DEV_BOTNET_44,New York NY,web_portal
+TXN_1026,ACC_501,12.00,2026-10-04T12:00:30Z,Speedy Cash Card Testing,Gift Cards,DEV_BOTNET_44,New York NY,web_portal
+TXN_1027,ACC_501,12.00,2026-10-04T12:01:00Z,Speedy Cash Card Testing,Gift Cards,DEV_BOTNET_44,New York NY,web_portal
+TXN_1028,ACC_501,12.00,2026-10-04T12:01:25Z,Speedy Cash Card Testing,Gift Cards,DEV_BOTNET_44,New York NY,web_portal
+TXN_1029,ACC_501,12.00,2026-10-04T12:01:50Z,Speedy Cash Card Testing,Gift Cards,DEV_BOTNET_44,New York NY,web_portal
+TXN_1030,ACC_501,12.00,2026-10-04T12:02:15Z,Speedy Cash Card Testing,Gift Cards,DEV_BOTNET_44,New York NY,web_portal
+TXN_1031,ACC_601,110.00,2026-10-01T15:00:00Z,Costco Wholesale,Groceries,DEV_USR_601,Denver CO,in_store
+TXN_1032,ACC_601,45.00,2026-10-02T19:30:00Z,Panera Bread,Dining,DEV_USR_601,Denver CO,in_store
+TXN_1033,ACC_601,7500.00,2026-10-04T03:50:00Z,Monte Carlo Casino Online,Gambling,DEV_TOR_EXIT_01,Bucharest Romania,web_portal
+TXN_1034,ACC_701,65.00,2026-10-01T08:00:00Z,Amazon Retail,Retail,DEV_USR_701,Atlanta GA,web_portal
+TXN_1035,ACC_701,32.00,2026-10-02T12:30:00Z,Chick-fil-A,Dining,DEV_USR_701,Atlanta GA,in_store
+TXN_1036,ACC_701,150.00,2026-10-03T16:45:00Z,Home Depot,Home Improvement,DEV_USR_701,Atlanta GA,in_store
+TXN_1037,ACC_801,520.00,2026-10-04T04:10:00Z,Luxury Gems Direct,Jewelry,DEV_RING_888,Miami FL,web_portal
+TXN_1038,ACC_802,460.00,2026-10-04T04:12:30Z,Luxury Gems Direct,Jewelry,DEV_RING_888,Miami FL,web_portal
+TXN_1039,ACC_901,89.00,2026-10-01T14:00:00Z,REI Outdoor Equipment,Retail,DEV_USR_901,Portland OR,in_store
+TXN_1040,ACC_901,14.50,2026-10-02T09:15:00Z,Blue Star Donuts,Dining,DEV_USR_901,Portland OR,in_store
+TXN_1041,ACC_901,45.00,2026-10-03T18:00:00Z,Powell's City of Books,Books,DEV_USR_901,Portland OR,in_store
+TXN_1042,ACC_1001,23.50,2026-10-01T07:45:00Z,Subway Sandwiches,Dining,DEV_USR_1001,Phoenix AZ,in_store
+TXN_1043,ACC_1001,78.20,2026-10-02T13:20:00Z,Fry's Food Stores,Groceries,DEV_USR_1001,Phoenix AZ,in_store
+TXN_1044,ACC_1001,8850.00,2026-10-04T01:30:00Z,Crypto BitPay Gateway,Cryptocurrency,DEV_EMULATOR_07,St. Petersburg RU,web_portal
